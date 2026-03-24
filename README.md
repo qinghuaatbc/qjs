@@ -44,11 +44,25 @@ make
 
 Produces a `qjs` binary in the project root.
 
+## Install
+
+To make `qjs` available globally:
+
+```bash
+sudo make install
+```
+
+This copies the binary to `/usr/local/bin/qjs`. To uninstall:
+
+```bash
+sudo make uninstall
+```
+
 ## Usage
 
 ```bash
-./qjs script.js     # run a JavaScript file
-./qjs               # start interactive REPL
+qjs script.js       # run a JavaScript file
+qjs                 # start interactive REPL
 ```
 
 ## Examples
@@ -72,6 +86,8 @@ npm start
 | Target | Description |
 |---|---|
 | `make` | Build `qjs` binary |
+| `make install` | Install `qjs` to `/usr/local/bin` |
+| `make uninstall` | Remove `qjs` from `/usr/local/bin` |
 | `make clean` | Remove build artifacts |
 | `make run FILE=path` | Build and run a script |
 | `make repl` | Start interactive REPL |
