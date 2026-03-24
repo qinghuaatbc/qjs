@@ -1,0 +1,8 @@
+build/
+qjs
+jsr
+jsr_debug
+jsr_debug.dSYM/
+*.o
+*.dSYM/
+node_modules/

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSRuntime Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 40px 20px; }
+    h1 { font-size: 1.8rem; margin-bottom: 4px; color: #f8fafc; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 32px; }
+    .badge { display: inline-block; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 2px 10px; font-size: 0.75rem; color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; max-width: 900px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; }
+    .card h2 { font-size: 1rem; margin-bottom: 16px; color: #cbd5e1; }
+    input, textarea { width: 100%; background: #0f1117; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #e2e8f0; font-size: 0.9rem; outline: none; }
+    input:focus, textarea:focus { border-color: #6366f1; }
+    textarea { resize: vertical; min-height: 80px; font-family: monospace; }
+    button { margin-top: 12px; width: 100%; background: #6366f1; color: white; border: none; border-radius: 8px; padding: 10px; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: #4f46e5; }
+    .result { margin-top: 12px; background: #0f1117; border: 1px solid #334155; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 0.82rem; color: #a5f3fc; min-height: 44px; white-space: pre-wrap; word-break: break-all; }
+    .result.error { color: #f87171; }
+    .info { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 16px 24px; max-width: 900px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: #94a3b8; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; box-shadow: 0 0 6px #22c55e; }
+  </style>
+</head>
+<body>
+  <h1>JSRuntime <span class="badge">QuickJS</span></h1>
+  <p class="subtitle">Express running on a custom C++ JavaScript runtime</p>
+
+  <div class="info">
+    <span class="dot"></span>
+    <span id="runtime-info">Connecting...</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>GET /greet/:name</h2>
+      <input id="greet-name" type="text" placeholder="Enter a name" value="World">
+      <button onclick="greet()">Send</button>
+      <div class="result" id="greet-result"></div>
+    </div>
+
+    <div class="card">
+      <h2>POST /echo</h2>
+      <textarea id="echo-body" placeholder='{"key": "value"}'>{&quot;message&quot;: &quot;hello&quot;, &quot;from&quot;: &quot;browser&quot;}</textarea>
+      <button onclick="echo()">Send</button>
+      <div class="result" id="echo-result"></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchJSON(url, opts) {
+      const r = await fetch(url, opts);
+      return r.json();
+    }
+
+    // Load runtime info
+    fetchJSON('/api/info')
+      .then(d => document.getElementById('runtime-info').textContent = `Server: ${d.runtime} — uptime ${d.uptime}s`)
+      .catch(() => document.getElementById('runtime-info').textContent = 'Could not reach server');
+
+    async function greet() {
+      const name = document.getElementById('greet-name').value.trim() || 'World';
+      const el = document.getElementById('greet-result');
+      try {
+        const d = await fetchJSON(`/greet/${encodeURIComponent(name)}`);
+        el.className = 'result';
+        el.textContent = JSON.stringify(d, null, 2);
+      } catch(e) {
+        el.className = 'result error';
+        el.textContent = e.message;
+      }
+    }
+
+    async function echo() {
+      const el = document.getElementById('echo-result');
+      let body;
+      try { body = JSON.parse(document.getElementById('echo-body').value); }
+      catch(e) { el.className = 'result error'; el.textContent = 'Invalid JSON'; return; }
+      try {
+        const d = await fetchJSON('/echo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        el.className = 'result';
+        el.textContent = JSON.stringify(d, null, 2);
+      } catch(e) {
+        el.className = 'result error';
+        el.textContent = e.message;
+      }
+    }
+  </script>
+</body>
+</html>
