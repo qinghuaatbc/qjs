@@ -7,7 +7,8 @@ QJS_VERSION := $(shell cat quickjs/VERSION)
 # The runtime/*.cpp files reference quickjs headers via relative "../quickjs/" paths.
 CXXFLAGS := -std=c++17 -O2 -Wall -Wextra
 CFLAGS   := -O2 -Wall -I./quickjs -D_GNU_SOURCE -DCONFIG_VERSION=\"$(QJS_VERSION)\"
-LDFLAGS  :=
+LDFLAGS      :=
+INSTALL_DIR  := /usr/local/bin
 
 UNAME := $(shell uname)
 ifeq ($(UNAME), Darwin)
@@ -62,6 +63,14 @@ $(BUILD)/rt_%.o: runtime/%.cpp
 clean:
 	rm -rf $(BUILD) $(TARGET)
 
+install: $(TARGET)
+	install -m 755 $(TARGET) $(INSTALL_DIR)/$(TARGET)
+	@echo "✓ Installed $(TARGET) to $(INSTALL_DIR)/$(TARGET)"
+
+uninstall:
+	rm -f $(INSTALL_DIR)/$(TARGET)
+	@echo "✓ Removed $(INSTALL_DIR)/$(TARGET)"
+
 run: $(TARGET)
 	./$(TARGET) $(FILE)
 
@@ -93,4 +102,4 @@ test-http: $(TARGET)
 test-all: test-hello test-closures test-async test-oop
 	@echo "✓ All tests passed"
 
-.PHONY: all clean run repl test-hello test-closures test-async test-oop test-all
+.PHONY: all clean install uninstall run repl test-hello test-closures test-async test-oop test-all
